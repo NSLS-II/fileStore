@@ -140,7 +140,7 @@ def get_spec_handler(base_fs_document, handle_registry=None):
     return fid, handle_registry[spec](fpath, **kwargs)
 
 
-def get_data(events_fs_doc, get_handler_method):
+def get_data(events_fs_doc, get_file_doc_method):
     """
     Given a document from the events collection, get the externally
     stored data.
@@ -161,6 +161,8 @@ def get_data(events_fs_doc, get_handler_method):
     fs_doc = dict(events_fs_doc)
     eid = fs_doc.pop(EID_KEY)
     fid = fs_doc.pop(FID_KEY)
-    kwargs = fs_doc.pop(EVENT_CUSTOM_KEY)
-    handler = get_handler_method(fid)
-    return eid, handler(**kwargs)
+    event_kwargs = fs_doc.pop(EVENT_CUSTOM_KEY)
+    file_doc = get_file_doc_method(fid)
+    h_fid, handler = get_spec_handler(file_doc)
+    assert fid == h_fid
+    return eid, handler(**event_kwargs)

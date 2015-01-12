@@ -1,6 +1,7 @@
 __author__ = 'arkilic'
 
 from .. import EID_KEY, FID_KEY
+from .. import retrieve
 
 from pymongo import MongoClient
 
@@ -62,3 +63,26 @@ class FSDB(object):
                 event_list.bsonify(), wtimeout=100, write_concern={'w': 1})
 
         return event_list_id
+
+    def find_event_doc(self, event_uuid):
+        """
+        Given an event key, return the document associated with it.
+        """
+        res = self.db['event_list'].find_one({EID_KEY: event_uuid})
+        if res is None:
+            raise ValueError("event does net exist")
+        return res
+
+    def find_file_doc(self, file_uuid):
+        """
+        Given a file key, return the document associated with it.
+        """
+        res = self.db['file_base'].find_one({FID_KEY: file_uuid})
+        if res is None:
+            raise ValueError("event does net exist")
+        return res
+
+    def find_data(self, event_uuid):
+        event_doc = self.find_event_doc(event_uuid)
+        eid, data = retrieve.get_data(event_doc, self.find_file_doc)
+        return data
