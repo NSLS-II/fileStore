@@ -10,7 +10,7 @@ import mongoengine.connection
 
 import filestore.commands as fc
 import filestore.retrieve as fsr
-from filestore.odm_templates import Datum, ALIAS
+from filestore.odm_templates import Datum, ALIAS, Resource
 from numpy.testing import assert_array_equal
 from nose.tools import assert_raises
 
@@ -24,6 +24,8 @@ def setup():
     global conn
     # make sure nothing is connected
     fc.db_disconnect()
+    Datum._collection = None
+    Resource._collection = None
     # make sure it _is_ connected
     conn = mongoengine.connect(db_name, host='localhost',
                         alias=ALIAS)
