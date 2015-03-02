@@ -46,6 +46,7 @@ import uuid
 
 from filestore.api import register_handler, insert_resource, insert_datum, retrieve
 import filestore.handlers as fh
+import filestore.file_writers as fw
 
 import logging
 logger = logging.getLogger(__name__)
@@ -75,6 +76,7 @@ def save_syn_data(eid, data, base_path=None):
     if base_path is None:
         base_path = op.join(op.expanduser('~'), '.fs_cache',
                             str(datetime.date.today()))
+    fw._make_sure_path_exists(base_path)
     fpath = op.join(base_path, str(eid) + '.h5')
 
     with h5py.File(fpath, 'w') as f:
@@ -174,8 +176,8 @@ def test_data_io():
         yield _test_retrieve_data, data_id, 20
 
     # total index number, along energy axes
-    num = 20
-    for i in range(num):
-        pos = 0
-        data_id = get_2D_data(pos)
-        yield _test_retrieve_data, data_id, 10
+    # num = 20
+    # for i in range(num):
+    #     pos = 0
+    #     data_id = get_2D_data(pos)
+    #     yield _test_retrieve_data, data_id, 10
