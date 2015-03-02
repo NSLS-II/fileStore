@@ -37,15 +37,6 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
 import six
-from metadatastore.api import (insert_run_start,
-                               insert_event,
-                               insert_event_descriptor,
-                               insert_beamline_config)
-import filestore.retrieve as fsr
-import filestore.commands as fsc
-
-from filestore.file_readers import HDFMapsSpectrumHandler as HDFM
-
 import h5py
 import os.path as op
 import numpy as np
@@ -53,11 +44,15 @@ from nose.tools import assert_true, assert_raises, assert_false, assert_equal
 import datetime
 import uuid
 
+from filestore.api import register_handler, insert_resource, insert_datum, retrieve
+import filestore.handlers as fh
+
 import logging
 logger = logging.getLogger(__name__)
 
 
-fsr.register_handler('hdf_maps', HDFM)
+register_handler('hdf_maps_1D', fh.HDFMapsSpectrumHandler)
+register_handler('hdf_maps_2D', fh.HDFMapsEnergyHandler)
 
 
 def save_syn_data(eid, data, base_path=None):
@@ -95,7 +90,7 @@ def save_syn_data(eid, data, base_path=None):
     return fpath
 
 
-def get_data(ind_v, ind_h):
+def get_1D_data(ind_v, ind_h):
     """
     Get data for given x, y index.
 
@@ -119,73 +114,68 @@ def get_data(ind_v, ind_h):
     file_path = save_syn_data(uid, syn_data)
 
     custom = {'dset_path': 'mca_arr'}
+    fb = insert_resource('hdf_maps_1D', file_path, resource_kwargs=custom)
+    evl = insert_datum(fb, uid, datum_kwargs={'x': ind_v, 'y': ind_h})
+    return evl.datum_id
 
-    fb = fsc.save_file_base('hdf_maps', file_path, custom)
-    evl = fsc.save_file_event_link(fb, uid, link_parameters={'x': ind_v, 'y': ind_h})
-    return evl.event_id
+
+def get_2D_data(ind):
+    """
+    Get data for given index of energy.
+
+    Parameters
+    ----------
+    ind : int
+        index for 2D slice
+
+    Returns
+    -------
+    unicode:
+        id number of event
+    """
+
+    uid = str(uuid.uuid1())
+
+    # generate 3D random number with a given shape
+    syn_data = np.random.randn(20, 1, 10)
+    file_path = save_syn_data(uid, syn_data)
+
+    custom = {'dset_path': 'mca_arr'}
+    fb = insert_resource('hdf_maps_2D', file_path, resource_kwargs=custom)
+    evl = insert_datum(fb, uid, datum_kwargs={'e_index': ind})
+    return evl.datum_id
+
+
+def _test_retrieve_data(evt, num):
+    """
+    Parameters
+    ----------
+    evt : unicode
+        id number of event
+    num : int
+        size to be matched
+    """
+    data = retrieve(evt)
+    assert_equal(data.size, num)
 
 
 def test_data_io():
     """
-    Save data to db and run test when data is retrieved.
+    Test both 1D and 2D reader from hdf handlers.
     """
-    blc = insert_beamline_config({'cfg1': 1}, 0.0)
-    begin_run = insert_run_start(time=0., scan_id=1, beamline_id='csx',
-                                 uid=str(uuid.uuid4()),
-                                 beamline_config=blc)
-
-    # data keys entry
-    data_keys = {'x_pos': dict(source='MCA:pos_x', dtype='number'),
-                 'y_pos': dict(source='MCA:pos_y', dtype='number'),
-                 'xrf_spectrum': dict(source='MCA:spectrum', dtype='array',
-                                      #shape=(5,),
-                                      external='FILESTORE:')}
-
-    # save the event descriptor
-    e_desc = insert_event_descriptor(
-        run_start=begin_run, data_keys=data_keys, time=0.,
-        uid=str(uuid.uuid4()))
 
     # number of positions to record, basically along a horizontal line
-    num = 5
-
+    num = 10
     for i in range(num):
         v_pos = 0
         h_pos = i
 
-        spectrum = get_data(v_pos, h_pos)
+        data_id = get_1D_data(v_pos, h_pos)
+        yield _test_retrieve_data, data_id, 20
 
-        # Put in actual ndarray data, as broker would do.
-        data1 = {'xrf_spectrum': (spectrum, error(i)),
-                 'v_pos': (v_pos, error(i)),
-                 'h_pos': (h_pos, error(i))}
-
-        event = insert_event(event_descriptor=e_desc, seq_num=i,
-                             time=error(i), data=data1, uid=str(uuid.uuid4()))
-
-        # test on retrieve data for all data sets
-        yield _test_retrieve_data, event
-
-
-def _test_retrieve_data(evt):
-    data = fsc.retrieve_data(evt['data']['xrf_spectrum'][0])
-    assert_equal(data.size, 20)
-
-
-def error(val, sigma=0.01):
-    """Return a copy of the input plus noise
-
-    Parameters
-    ----------
-    val : number or ndarrray
-    sigma : width of Gaussian from which noise values are drawn
-
-    Returns
-    -------
-    noisy_val : number or ndarray
-        same shape as input val
-    """
-    if np.isscalar(val):
-        return val + sigma * np.random.randn()
-    else:
-        return val + sigma * np.random.randn(val.shape)
+    # total index number, along energy axes
+    num = 20
+    for i in range(num):
+        pos = 0
+        data_id = get_2D_data(pos)
+        yield _test_retrieve_data, data_id, 10
