@@ -121,7 +121,10 @@ class HDF5DatasetSliceHandler(_HDF5HandlerBase):
         if not self._dataset:
             self._dataset = self._file[self._key]
         start, stop = point_number * self._fpp, (point_number + 1) * self._fpp
-        return self._dataset[start:stop].squeeze()
+
+        ret = pims.Frame(self._dataset[start:stop].squeeze())
+        ret.metadata.update({})
+        return ret
 
 
 class AreaDetectorHDF5Handler(HDF5DatasetSliceHandler):
