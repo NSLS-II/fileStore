@@ -1,5 +1,8 @@
 language: python
 env:
+  matrix:
+    - DEV=true
+    - DEV=false
   global:
     - ANACONDA_USER=lightsource2
     # if ANACONDA_CHANNEL is not defined then the conda package will be
@@ -15,9 +18,9 @@ git:
 services:
   - mongodb
 
-cache:
-  directories:
-    - $HOME/.cache/pip
+# cache:
+#   directories:
+#     - $HOME/.cache/pip
 
 python:
   - 2.7
@@ -30,28 +33,40 @@ before_install:
   - chmod +x ~/scripts/*.sh
   # install miniconda/anaconda-client/conda-build
   - . ~/scripts/install-miniconda.sh
+  - cat ~/.condarc
   - . ~/scripts/init-filestore.sh
 
 install:
   - export GIT_FULL_HASH=`git rev-parse HEAD`
   - conda update conda
-  - conda create -n testenv pip nose python=$TRAVIS_PYTHON_VERSION pymongo six pyyaml numpy h5py jsonschema boltons
+  # install the dev packages of any of our dependencies
+  - if [[ $DEV == 'true' ]]; then
+      conda config --remove channels lightsource2 --force;
+      conda config --add channels lightsource2/channels/development --force;
+    fi;
+  # show the current state of the conda config.
+  - conda info
+  - conda create -n testenv pip nose python=$TRAVIS_PYTHON_VERSION pymongo six pyyaml numpy h5py jsonschema boltons doct
   - source activate testenv
   - conda install -c soft-matter pims
   - pip install coveralls
-  - 'pip install https://github.com/NSLS-II/doct/zipball/master#egg=doct'
   - python setup.py install
 
 
 script:
   - python run_tests.py
   # build the conda package on travis
-  - . ~/scripts/conda-build.sh
+  - if [[ $DEV == 'false' ]]; then
+      . ~/scripts/conda-build.sh;
+    fi;
 
 after_success:
   - coveralls
   # upload the conda package to the $ANACONDA_CHANNEL in $ANACONDA_USER
-  - . ~/scripts/anaconda-upload.sh
+  - if [[ $DEV == 'false' ]]; then
+      . ~/scripts/anaconda-upload.sh;
+    fi;
+
 
 after_failure:
   - . ~/scripts/debug.sh
