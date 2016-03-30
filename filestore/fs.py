@@ -1,5 +1,5 @@
 from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
+                        )
 
 import six
 from pkg_resources import resource_filename

@@ -1,4 +1,4 @@
-from __future__ import (unicode_literals, print_function, division,
+from __future__ import (print_function, division,
                         absolute_import)
 import uuid
 from filestore.api import db_connect, db_disconnect
