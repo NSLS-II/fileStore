@@ -121,4 +121,3 @@ plt.show()
 For retrieving from more complex file types (looking at you hdf!), see some
 of the built-in writers that are shipped with filestore in `filestore.handlers`
 
-[![Build Status](https://travis-ci.org/arkilic/filestore.svg?branch=master)](https://travis-ci.org/arkilic/filestore)
