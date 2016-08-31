@@ -40,7 +40,7 @@ install:
   # going to find the build directory and get confused why there are two sets
   # of every test file
   - git clean -xfd
-
+  - cat ~/.config/filestore/connection.yml
 
 script:
   - coverage run run_tests.py
