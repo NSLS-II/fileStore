@@ -8,7 +8,7 @@ addons:
     sources:
     - mongodb-3.2-precise
     packages:
-    - mongodb-org-server
+    - mongodb-org
 
 cache:
   directories:
@@ -30,6 +30,7 @@ install:
   - export GIT_FULL_HASH=`git rev-parse HEAD`
   - conda update conda
   - conda create -n testenv pip pytest python=$TRAVIS_PYTHON_VERSION pymongo six pyyaml numpy h5py jsonschema boltons pims tifffile doct
+  - mongo localhost:27017/admin ~/scripts/admin.js
   - source activate testenv
   - pip install coveralls
   - python setup.py install

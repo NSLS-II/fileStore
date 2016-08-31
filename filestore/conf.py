@@ -76,5 +76,6 @@ def load_configuration(name, prefix, fields, fname=None):
 
     return config
 
-connection_config = load_configuration('filestore', 'FS',
-                                       ['host', 'database', 'port'])
+# connection_config = load_configuration('filestore', 'FS',
+#                                        ['host', 'database', 'port',
+#                                         'mongo_user', 'mongo_pwd'])
