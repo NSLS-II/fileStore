@@ -120,3 +120,4 @@ plt.show()
 ##Using filestore with other filetypes
 For retrieving from more complex file types (looking at you hdf!), see some
 of the built-in writers that are shipped with filestore in `filestore.handlers`
+

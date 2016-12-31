@@ -127,11 +127,12 @@ class FileStoreRO(object):
         self._api = _API_MAP[val]
         self._version = val
 
-    def __init__(self, config, handler_reg=None, version=1, root_map=None):
+    def __init__(self, config, handler_reg=None, version=1, root_map=None,
+                 auth=True):
         self.config = config
         self._api = None
         self.version = version
-
+        self.auth = auth
         if handler_reg is None:
             handler_reg = {}
         self.handler_reg = _ChainMap(handler_reg)
@@ -262,8 +263,15 @@ class FileStoreRO(object):
     @property
     def _connection(self):
         if self.__conn is None:
-            self.__conn = MongoClient(self.config['host'],
-                                      self.config.get('port', None))
+            if self.auth:
+                uri = 'mongodb://{0}:{1}@{2}:{3}/'.format(self.config['mongo_user'],
+                                                          self.config['mongo_pwd'],
+                                                          self.config['host'],
+                                                          self.config['port'])
+                self.__conn = MongoClient(uri)
+            else:
+                self.__conn = MongoClient(self.config['host'],
+                                          self.config.get('port', None))
         return self.__conn
 
     def get_spec_handler(self, resource):

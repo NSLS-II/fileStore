@@ -2,3 +2,4 @@ h5py
 numpy
 pymongo
 jsonschema
+boltons

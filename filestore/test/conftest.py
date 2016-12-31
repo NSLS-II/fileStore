@@ -15,6 +15,7 @@ def fs(request):
     db_name = "fs_testing_base_disposable_{uid}"
     test_conf = create_test_database(host='localhost',
                                      port=27017, version=version,
+                                     mongo_user='tom', mongo_pwd='jerry',
                                      db_template=db_name)
     fs = filestore.fs.FileStore(test_conf, version=version)
     fs.register_handler('syn-mod', SynHandlerMod)
@@ -35,7 +36,7 @@ def fs_v01(request):
     '''
     db_name = "fs_testing_v01_disposable_{}".format(str(uuid.uuid4()))
     test_conf = dict(database=db_name, host='localhost',
-                     port=27017)
+                     port=27017, mongo_user='tom', mongo_pwd='jerry')
     # v0 does not check!
     install_sentinels(test_conf, 1)
     fs0 = filestore.fs.FileStore(test_conf, version=0)
