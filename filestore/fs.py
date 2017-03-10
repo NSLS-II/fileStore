@@ -309,7 +309,7 @@ class FileStoreRO(object):
             return h_cache[key]
         except KeyError:
             pass
-        
+
         kwargs = resource['resource_kwargs']
         rpath = resource['resource_path']
         root = resource.get('root', '')
