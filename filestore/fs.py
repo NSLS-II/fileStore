@@ -20,8 +20,6 @@ from . import core_v0
 from .handlers_base import DuplicateHandler
 from .utils import _make_sure_path_exists
 
-from functools import partial
-
 _API_MAP = {0: core_v0,
             1: core}
 
@@ -304,12 +302,8 @@ class FileStoreRO(object):
 
         spec = resource['spec']
         handler = self.handler_reg[spec]
-        if isinstance(handler, partial):
-            handler_name = handler.func.__name__
-        else:
-            handler_name = handler.__name__
 
-        key = (str(resource['uid']), handler_name)
+        key = (str(resource['uid']), handler.__name__)
 
         try:
             return h_cache[key]
