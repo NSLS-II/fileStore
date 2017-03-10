@@ -315,13 +315,15 @@ class FileStoreRO(object):
             return h_cache[key]
         except KeyError:
             pass
-
+        
         kwargs = resource['resource_kwargs']
         rpath = resource['resource_path']
         root = resource.get('root', '')
-        root = self.root_map.get(root, root)
         if root:
             rpath = os.path.join(root, rpath)
+        for key, value in self.root_map.items():
+            if rpath.startswith(key):
+                rpath = rpath.replace(key, value)
         ret = handler(rpath, **kwargs)
         h_cache[key] = ret
         return ret
