@@ -314,8 +314,11 @@ class FileStoreRO(object):
         rpath = resource['resource_path']
         root = resource.get('root', '')
         root = self.root_map.get(root, root)
-        if root:
-            rpath = os.path.join(root, rpath.lstrip('/'))
+        if os.path.isabs(rpath):
+            rpath.lstrip('/')
+        if not root:
+            root = os.sep
+        rpath = os.path.join(root, rpath.lstrip('/'))
         ret = handler(rpath, **kwargs)
         h_cache[key] = ret
         return ret
