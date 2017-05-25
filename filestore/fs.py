@@ -315,7 +315,7 @@ class FileStoreRO(object):
         root = resource.get('root', '')
         root = self.root_map.get(root, root)
         if os.path.isabs(rpath):
-            rpath.lstrip('/')
+            rpath = rpath.lstrip('/')
         if not root:
             root = os.sep
         rpath = os.path.join(root, rpath)
