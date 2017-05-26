@@ -24,7 +24,6 @@ def test_insert_funcs(func, fs):
 
 
 def test_non_exist(fs):
-
     with pytest.raises(fs.DatumNotFound):
         fs.retrieve('aardvark')
 
@@ -37,9 +36,10 @@ def test_non_unique_fail(fs):
     with pytest.raises(fs.DuplicateKeyError):
         fs.insert_datum(str(fb['id']), r_id, {'n': 1})
 
+
 def test_root(fs):
     print(fs._db)
-    res = fs.insert_resource('root-test', 'foo', {}, root='bar')
+    res = fs.insert_resource('root-test', 'foo', {}, root='/bar')
     dm = fs.insert_datum(res, str(uuid.uuid4()), {})
     if fs.version == 1:
         assert res['root'] == 'bar'
